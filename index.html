@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mohammed Maheer - Robotics & AI Engineer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/c4254e24a8.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="header">
+    <div class="container">
+        <nav>
+            <img src="images/logo.png" class="logo">
+            <ul id="sidemenu">
+                <li><a href="#header"><b>Home</b></a></li>
+                <li><a href="#about"><b>About</b></a></li>
+                <li><a href="#services"><b>Services</b></a></li>
+                <li><a href="#portfolio"><b>Portfolio</b></a></li>
+                <li><a href="#contact"><b>Contact</b></a></li>
+                <i class="fas fa-times" onclick="closemenu()"></i>
+            </ul>
+            <i class="fas fa-bars" onclick="openmenu()"></i>
+        </nav>
+        <div class="header-text">
+            <p>Robotics & A.I Engineer</p>
+            <h1>Hi, I'm <span>Mohammed</span><br>Maheer From India</h1>
+        </div>
+    </div>
+</div>
+<!-- -----------about---------- -->
+<div id="about">
+    <div class="container">
+        <div class="row">
+            <div class="about-col-1">
+                <img src="images/user.png">
+            </div>
+            <div class="about-col-2">
+                <h1 class="sub-title">About Me</h1><br>
+                <p>I am a passionate Robotics Engineer with 2 years of hands-on experience leading groundbreaking projects from conception to execution. My journey in the field of robotics has been driven by a deep fascination with turning ambitious ideas into reality..</p>
+
+                <div class="tab-titles">
+                    <p class="tab-links active-link" onclick="opentab('skills', event)">Skills</p>
+                    <p class="tab-links" onclick="opentab('experience', event)">Experience</p>
+                    <p class="tab-links" onclick="opentab('education', event)">Education</p>
+                </div>
+                <div class="tab-contents active-tab" id="skills">
+                    <ul>
+                        <li><span>Neural Networks and Deep Learning</span><br>Highly skilled in designing and training neural networks for various applications, including image recognition, natural language processing, and predictive modeling.</li>
+                        <li><span>Robotics Technology</span><br>Proficient in using PLC to design and implement complex robotic systems</li>
+                        <li><span>Mechanical Design</span><br>Skilled in creating precise and efficient mechanical designs for robotic systems</li>
+                        <li><span>Programming</span><br>Experienced in programming Robotic and Machine Learning systems to perform a wide range of tasks</li>
+                        <li><span>System Integration</span><br>Adept at integrating various components to create cohesive robotic solutions</li>
+                    </ul>
+                </div>
+                <div class="tab-contents" id="experience">
+                    <ul>
+                        <li><span>March 2025 - April 2025</span><br>Got Shortlisted and participated in the final round of Hackoverflow 3.0 at Pillai, HOC College of Engineering and Technology, Panvel</li>
+                        <li><span>June 2024 - July 2024</span><br>Machine Learning and Data Science Internship at iGeeks Technologies, Bangalore</li>
+                        <li><span>April 2024 - June 2024</span><br>Machine Learning Internship at Internship Studio, Virtual</li>
+
+                    </ul>
+                </div>
+                <div class="tab-contents" id="education">
+                    <ul>
+                        <li><span>2022-Current</span><br>NMAM Institute of Technology, Nitte</li>
+                        <li><span>2020-2022</span><br>Higher Secondary CBSE PCM-Informatics Practices from OUR OWN ENGLISH HIGH SCHOOL, fujairah, U.A.E</li>
+                        <li><span>2008-2020</span><br>Secondary Education from East Coast English School, U.A.E</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ---------services---------------- -->
+<div id="services">
+    <div class="container">
+        <h1 class="sub-title">My Services</h1>
+        <div class="services-list">
+            <div>
+                <i class="fas fa-code"></i>
+                <h2>Robotics Solutions:</h2>
+                <p>Design and implement advanced robotics systems tailored to industrial and commercial needs, from mechanical design to system integration, driving productivity and innovation.</p>
+
+            </div>
+            <div>
+                <i class="fas fa-crop-alt"></i>
+                <h2>AI Automation</h2>
+                <p>Develop intelligent systems using AI to enhance automation, adapt to dynamic environments, and optimize performance with actionable
+insights.</p>
+                
+            </div>
+            <div>
+                <i class="fab fa-app-store"></i>
+                <h2>Programming and Integration</h2>
+                <p>Create and integrate software solutions for robotic systems, ensuring smooth operation and interoperability with other technologies.</p>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ----------portfolio------------ -->
+<div id="portfolio">
+    <div class="container">
+        <h1 class="sub-title">My Work</h1>
+        <div class="work-list">
+            <div class="work">
+                <img src="images/work1.png">
+                <div class="layer">
+                    <h3>Smart AI powered Hiring App</h3>
+                    <p>IntelliHire, A smart AI assistant for hiring</p>
+                    <a href="https://github.com/MohammedMaheer/IntelliHire"><i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            <div class="work">
+                <img src="images/work2.png">
+                <div class="layer">
+                    <h3>Protoyping of a Smart UnderwaterRobot</h3>
+                    <p>Currently working on the protoyping of a smart robot</p>
+                    <a href="https://www.ros.org/"><i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<!-- ----------contact------------- -->
+<div id="contact">
+    <div class="container">
+        <div class="row">
+            <div class="contact-left">
+                <h1 class="sub-title">Contact Me</h1>
+                <p><i class="fas fa-paper-plane"></i> mohdmaahir786@gmail.com</p>
+                <p><i class="fas fa-phone-square-alt"></i> +91-9972803118</p>
+                <div class="social-icons">
+                    <a href="https://facebook.com"><i class="fab fa-facebook"></i></a>
+                    <a href="https://twitter.com"><i class="fab fa-twitter-square"></i></a>
+                    <a href="https://www.instagram.com/m.maahirr"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.linkedin.com/in/mohammedmaheer"><i class="fab fa-linkedin"></i></a>
+                </div>
+                <a href="images/my-cv.pdf" download class="btn btn2">Download CV</a>
+            </div>
+            <div class="contact-right">
+                <form name="submit-to-google-sheet">
+                    <input type="text" name="Name" placeholder="Your Name" required>
+<input type="email" name="Email" placeholder="Your Email" required>
+<textarea name="Message" rows="6" placeholder="Your Message"></textarea>
+
+                    <button type="submit" class="btn btn2">Submit</button>
+                </form>
+                <span id="msg"></span>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        <p>Copyright © Mohammed Maheer <i class="fas fa-heart"></i></p>
+    </div>
+</div>
+
+<script>
+    var tablinks = document.getElementsByClassName("tab-links");
+    var tabcontents = document.getElementsByClassName("tab-contents");
+
+    function opentab(tabname, e){
+        for(tablink of tablinks){
+            tablink.classList.remove("active-link");
+        }
+        for(tabcontent of tabcontents){
+            tabcontent.classList.remove("active-tab");
+        }
+        e.currentTarget.classList.add("active-link");
+        document.getElementById(tabname).classList.add("active-tab");
+    }
+</script>
+
+<script>
+    var sidemeu = document.getElementById("sidemenu");
+
+    function openmenu(){
+        sidemeu.style.right = "0";
+    }
+    function closemenu(){
+        sidemeu.style.right = "-200px";
+    }
+</script>
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxEFhjIkTDUOWjAD6LGpSPRLoWej_mislQ4YS2DlfbjUS-JNJXrXU_WamGLktNJcWnbNw/exec';// Replace with your Google She script URL
+    const form = document.forms['submit-to-google-sheet']
+    const msg = document.getElementById("msg")
+  
+    form.addEventListener('submit', e => {
+      e.preventDefault()
+      fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+        .then(response => {
+            msg.innerHTML = "Message sent successfully"
+            setTimeout(function(){
+                msg.innerHTML = ""
+            },5000)
+            form.reset()
+        })
+        .catch(error => console.error('Error!', error.message))
+    })
+  </script>
+</body>
+</html>
