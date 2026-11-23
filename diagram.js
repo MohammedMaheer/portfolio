@@ -18,12 +18,8 @@ export function createDiagram(canvas, reducedMotion) {
   let width = 0;
   let height = 0;
   let ratio = 1;
-  let active = 0;
   let angle = stages[0].angle;
-  let elapsed = 0;
-  let frame = 0;
-  let previous = 0;
-  let visible = false;
+  let progress = 0;
   const strengths = [...stages[0].links];
   const light = [...stages[0].points];
   const dust = Array.from({ length: 36 }, (_, index) => [
@@ -33,7 +29,7 @@ export function createDiagram(canvas, reducedMotion) {
   ]);
 
   function project(node) {
-    const tilt = angle + Math.sin(elapsed * .5) * .075;
+    const tilt = angle + Math.sin(progress * Math.PI) * .18;
     const x = node.x * Math.cos(tilt) + node.z * Math.sin(tilt);
     const z = node.z * Math.cos(tilt) - node.x * Math.sin(tilt);
     const perspective = 1 / (1 - z * .26);
@@ -53,6 +49,18 @@ export function createDiagram(canvas, reducedMotion) {
     glow.addColorStop(1, '#17142500');
     context.fillStyle = glow;
     context.fillRect(0, 0, width, height);
+
+    context.save();
+    context.strokeStyle = '#b59de838';
+    context.lineWidth = 1;
+    for (let row = -3; row <= 3; row++) {
+      const y = height / 2 + row * height * .105;
+      context.beginPath();
+      context.moveTo(0, y + row * 9);
+      context.quadraticCurveTo(width * (.5 - angle), y + 22 * Math.sin(progress * Math.PI), width, y - row * 9);
+      context.stroke();
+    }
+    context.restore();
 
     context.fillStyle = '#bdb2e6';
     for (const [x, y, brightness] of dust) {
@@ -77,16 +85,18 @@ export function createDiagram(canvas, reducedMotion) {
       context.lineWidth = 1 + strengths[index];
       context.stroke();
       if (reducedMotion || strengths[index] < .36) continue;
-      const t = (elapsed * .46 + index * .19) % 1;
-      const u = 1 - t;
-      const x = u ** 3 * start.x + 3 * u * t * mid + t ** 3 * end.x;
-      const y = u * u * (u + 3 * t) * start.y + t * t * (t + 3 * u) * end.y;
       context.fillStyle = nodes[right].color;
       context.shadowBlur = 12;
       context.shadowColor = nodes[right].color;
-      context.beginPath();
-      context.arc(x, y, 2.5, 0, Math.PI * 2);
-      context.fill();
+      for (let packet = 0; packet < 3; packet++) {
+        const t = (progress * 3.5 + index * .19 + packet * .12) % 1;
+        const u = 1 - t;
+        const x = u ** 3 * start.x + 3 * u * t * mid + t ** 3 * end.x;
+        const y = u * u * (u + 3 * t) * start.y + t * t * (t + 3 * u) * end.y;
+        context.beginPath();
+        context.arc(x, y, 2.8 - packet * .55, 0, Math.PI * 2);
+        context.fill();
+      }
       context.shadowBlur = 0;
     }
 
@@ -117,32 +127,6 @@ export function createDiagram(canvas, reducedMotion) {
     context.globalAlpha = 1;
   }
 
-  function schedule() {
-    if (!frame && visible && !document.hidden && !reducedMotion) frame = requestAnimationFrame(tick);
-  }
-
-  function tick(time) {
-    frame = 0;
-    const delta = previous ? Math.min((time - previous) / 1000, .05) : 0;
-    previous = time;
-    elapsed += delta;
-    const stage = stages[active];
-    const easing = 1 - Math.exp(-delta * 7);
-    angle += (stage.angle - angle) * easing;
-    for (let index = 0; index < links.length; index++) {
-      strengths[index] += (stage.links[index] - strengths[index]) * easing;
-      light[index] += (stage.points[index] - light[index]) * easing;
-    }
-    paint();
-    schedule();
-  }
-
-  function stop() {
-    cancelAnimationFrame(frame);
-    frame = 0;
-    previous = 0;
-  }
-
   function resize() {
     width = viewport.clientWidth;
     height = viewport.clientHeight;
@@ -152,36 +136,31 @@ export function createDiagram(canvas, reducedMotion) {
     paint();
   }
 
-  function showStage(index) {
-    active = index;
-    if (reducedMotion) {
-      angle = stages[active].angle;
-      strengths.splice(0, strengths.length, ...stages[active].links);
-      light.splice(0, light.length, ...stages[active].points);
-      paint();
+  function setProgress(next) {
+    if (next === progress) return;
+    progress = next;
+    const first = Math.min(1, Math.floor(progress * 2));
+    const amount = progress * 2 - first;
+    const start = stages[first];
+    const end = stages[first + 1];
+    const mix = (a, b) => a + (b - a) * amount;
+    angle = mix(start.angle, end.angle);
+    for (let index = 0; index < links.length; index++) {
+      strengths[index] = mix(start.links[index], end.links[index]);
+      light[index] = mix(start.points[index], end.points[index]);
     }
-    schedule();
+    paint();
   }
 
   new ResizeObserver(resize).observe(viewport);
-  new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
-    if (visible) schedule();
-    else stop();
-  }).observe(viewport);
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stop();
-    else schedule();
-  });
 
   resize();
   viewport.classList.add('has-canvas');
   return {
-    showStage,
+    setProgress,
     setReducedMotion(enabled) {
       reducedMotion = enabled;
-      if (enabled) stop();
-      showStage(active);
+      paint();
     },
   };
 }

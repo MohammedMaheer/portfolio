@@ -2,7 +2,7 @@ import {
   ACESFilmicToneMapping, AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Fog,
   Color, CylinderGeometry, DirectionalLight, ExtrudeGeometry, GridHelper, Group,
   HemisphereLight, Line, LineBasicMaterial, LineLoop, MathUtils, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, OrthographicCamera, PlaneGeometry,
+  MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry, SphereGeometry,
   Scene, Shape, SRGBColorSpace, Vector3, WebGLRenderer, BufferGeometry,
 } from 'three';
 
@@ -142,16 +142,21 @@ function buildRobot() {
     jaws[1].position.x = pose.grip;
   }
 
-  return { robot, move };
+  function tip() {
+    robot.updateMatrixWorld(true);
+    return wrist.localToWorld(new Vector3(0, .66, 0));
+  }
+
+  return { robot, move, tip };
 }
 
 function buildStage(scene) {
-  const floor = new Mesh(new PlaneGeometry(42, 42), new MeshStandardMaterial({ color: 0x242626, roughness: .92 }));
+  const floor = new Mesh(new PlaneGeometry(42, 42), new MeshStandardMaterial({ color: 0x282431, roughness: .92 }));
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -.041;
   scene.add(floor);
 
-  const grid = new GridHelper(24, 48, 0x85654b, 0x5e5c52);
+  const grid = new GridHelper(24, 48, 0x8876a3, 0x483b5d);
   grid.position.y = -.02;
   grid.material.transparent = true;
   grid.material.opacity = .42;
@@ -195,46 +200,65 @@ function buildStage(scene) {
   }
 }
 
+const posesByProgress = [
+  [0, poses.home],
+  [.33, { ...poses.reach, grip: .22 }],
+  [.49, poses.reach],
+  [.61, { ...poses.reach, shoulder: -.73, elbow: -.78, grip: .09 }],
+  [1, poses.stow],
+];
+
+function poseAt(progress) {
+  const index = Math.max(0, posesByProgress.findLastIndex(([time]) => time <= progress));
+  const [time, a] = posesByProgress[index];
+  const [end, b] = posesByProgress[Math.min(index + 1, posesByProgress.length - 1)];
+  if (time === end) return a;
+  const t = MathUtils.smoothstep(progress, time, end);
+  return Object.fromEntries(Object.keys(a).map((key) => [key, MathUtils.lerp(a[key], b[key], t)]));
+}
+
 export function createArm(canvas, viewport, reduceMotion, onPose) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power', alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-  renderer.setClearColor(0x191b1b, 0);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+  renderer.setClearColor(0x15131b, 0);
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = 1.26;
 
   const scene = new Scene();
-  scene.add(new HemisphereLight(0xffe6c9, 0x575e62, 1.9));
-  scene.add(new AmbientLight(0xffffff, .23));
-  const key = new DirectionalLight(0xffe1bd, 3.1);
+  scene.add(new HemisphereLight(0xffdec0, 0x53528b, 1.63));
+  scene.add(new AmbientLight(0xffffff, .19));
+  const key = new DirectionalLight(0xffe1bd, 3.65);
   key.position.set(3.5, 7, 5);
   scene.add(key);
-  const rim = new DirectionalLight(0xff8454, 1.8);
+  const rim = new DirectionalLight(0xc299ff, 3.1);
   rim.position.set(-3, 3, -5);
   scene.add(rim);
-  const fill = new DirectionalLight(0xbad0e3, .95);
+  const fill = new DirectionalLight(0xbad0e3, 1.03);
   fill.position.set(-4, 2, 3);
   scene.add(fill);
   buildStage(scene);
-  scene.fog = new Fog(new Color(0x1e2020), 12, 22);
+  scene.fog = new Fog(new Color(0x1c1926), 10, 25);
 
-  const { robot, move } = buildRobot();
+  const { robot, move, tip } = buildRobot();
   scene.add(robot);
-  const camera = new OrthographicCamera(-3, 3, 2.5, -2.5, .1, 32);
-  const center = new Vector3(.53, 1.62, 0);
-  let current = { ...poses.home };
-  let target = poses.home;
-  let autoRotate = !reduceMotion;
-  const poseNames = Object.keys(poses);
-  let poseIndex = 0;
-  let playing = false;
-  let poseTime = 0;
-  let azimuth = .64;
-  let elevation = .27;
-  let orbitTime = 0;
+  const pathPoints = Array.from({ length: 80 }, (_, index) => {
+    move(poseAt(index / 79));
+    return tip();
+  });
+  const path = new Line(new BufferGeometry().setFromPoints(pathPoints),
+    new LineBasicMaterial({ color: 0xd0aaff, transparent: true, opacity: .7, depthWrite: false }));
+  const marker = new Mesh(new SphereGeometry(.045, 12, 8), new MeshBasicMaterial({ color: 0xf8d5ff }));
+  scene.add(path, marker);
+  const camera = new PerspectiveCamera(35, 1, .1, 40);
+  const center = new Vector3(.53, 1.55, 0);
+  let current = poses.home;
+  let chapter = '';
+  let progress = 0;
+  let userAzimuth = 0;
+  let userElevation = 0;
   let drag = null;
   let frame = 0;
-  let lastTime = 0;
   let visible = true;
   let contextReady = true;
 
@@ -242,65 +266,39 @@ export function createArm(canvas, viewport, reduceMotion, onPose) {
     const width = viewport.clientWidth;
     const height = viewport.clientHeight;
     if (!width || !height) return;
-    const halfHeight = Math.max(2.08, 2.2 * height / width);
-    const halfWidth = halfHeight * width / height;
-    camera.left = -halfWidth;
-    camera.right = halfWidth;
-    camera.top = halfHeight;
-    camera.bottom = -halfHeight;
+    camera.aspect = width / height;
+    camera.fov = camera.aspect < 1 ? 39 : 35;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
   }
 
   function render() {
-    const angle = azimuth + .23 * Math.sin(orbitTime);
-    const radius = 10;
-    camera.position.set(center.x + Math.sin(angle) * radius, center.y + Math.tan(elevation) * radius,
-      center.z + Math.cos(angle) * radius);
+    frame = 0;
+    const angle = .77 - progress * .99 + userAzimuth;
+    const elevation = MathUtils.clamp(.36 + .09 * Math.sin(progress * Math.PI) + userElevation, .06, .7);
+    const radius = 7.6 - Math.sin(progress * Math.PI) * 1.03;
+    camera.position.set(center.x + Math.sin(angle) * radius, center.y + Math.tan(elevation) * radius, Math.cos(angle) * radius);
     camera.lookAt(center);
     move(current);
+    path.geometry.setDrawRange(0, Math.floor(progress * (pathPoints.length - 1)) + 1);
+    path.visible = marker.visible = !reduceMotion && progress > .035;
+    if (marker.visible) marker.position.copy(tip());
     renderer.render(scene, camera);
   }
 
-  function tick(time) {
-    frame = 0;
-    const delta = lastTime ? Math.min((time - lastTime) / 1000, .05) : 0;
-    lastTime = time;
-    if (autoRotate && !drag) orbitTime += delta * .46;
-    if (playing) {
-      poseTime += delta;
-      if (poseTime >= 2.35) selectPose(poseNames[(poseIndex + 1) % poseNames.length]);
-    }
-    let settling = false;
-    for (const key of Object.keys(current)) {
-      if (reduceMotion || Math.abs(current[key] - target[key]) < .001) {
-        current[key] = target[key];
-      } else {
-        current[key] = MathUtils.damp(current[key], target[key], 7, delta);
-        settling = true;
-      }
-    }
-    render();
-    if (autoRotate || playing || settling) schedule();
-    else lastTime = 0;
-  }
-
   function schedule() {
-    if (!frame && visible && contextReady && !document.hidden) frame = requestAnimationFrame(tick);
+    if (!frame && visible && contextReady && !document.hidden) frame = requestAnimationFrame(render);
   }
 
-  function selectPose(pose) {
-    poseIndex = poseNames.indexOf(pose);
-    target = poses[pose];
-    poseTime = 0;
+  function notify(pose) {
+    if (pose === chapter) return;
+    chapter = pose;
     onPose(pose);
-    schedule();
   }
 
   function sleep() {
     cancelAnimationFrame(frame);
     frame = 0;
-    lastTime = 0;
   }
 
   new ResizeObserver(() => {
@@ -337,8 +335,8 @@ export function createArm(canvas, viewport, reduceMotion, onPose) {
   });
   canvas.addEventListener('pointermove', (event) => {
     if (drag?.id !== event.pointerId) return;
-    azimuth -= (event.clientX - drag.x) * .008;
-    elevation = MathUtils.clamp(elevation + (event.clientY - drag.y) * .006, .05, .64);
+    userAzimuth -= (event.clientX - drag.x) * .008;
+    userElevation = MathUtils.clamp(userElevation + (event.clientY - drag.y) * .006, -.32, .35);
     drag.x = event.clientX;
     drag.y = event.clientY;
     schedule();
@@ -351,41 +349,38 @@ export function createArm(canvas, viewport, reduceMotion, onPose) {
     const direction = orbitKeys[event.key];
     if (!direction) return;
     event.preventDefault();
-    azimuth += direction[0];
-    elevation = MathUtils.clamp(elevation + direction[1], .05, .64);
+    userAzimuth += direction[0];
+    userElevation = MathUtils.clamp(userElevation + direction[1], -.32, .35);
     schedule();
   });
   const finishDrag = (event) => {
-    if (drag?.id !== event.pointerId) return;
-    drag = null;
-    if (autoRotate) schedule();
+    if (drag?.id === event.pointerId) drag = null;
   };
   canvas.addEventListener('pointerup', finishDrag);
   canvas.addEventListener('pointercancel', finishDrag);
   canvas.addEventListener('lostpointercapture', finishDrag);
 
   size();
+  notify('home');
   render();
-  schedule();
 
   return {
-    get rotating() { return autoRotate; },
-    get playing() { return playing; },
-    setRotation(enabled) {
-      autoRotate = enabled;
+    setPose(pose) {
+      current = poses[pose];
+      notify(pose);
       schedule();
     },
-    setPose: selectPose,
-    setSequence(enabled) {
-      playing = enabled;
-      if (enabled) selectPose(poseNames[(poseIndex + 1) % poseNames.length]);
-    },
-    setReducedMotion(enabled) {
-      reduceMotion = enabled;
-      if (enabled) {
-        autoRotate = false;
-        playing = false;
+    setReducedMotion(value) {
+      reduceMotion = value;
+      if (value) {
+        progress = 0;
+        this.setPose('home');
       }
+    },
+    setProgress(next) {
+      progress = next;
+      current = poseAt(progress);
+      notify(progress < .23 ? 'home' : progress < .68 ? 'reach' : 'stow');
       schedule();
     },
   };

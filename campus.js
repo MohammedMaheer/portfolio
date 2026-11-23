@@ -1,7 +1,7 @@
 import {
   ACESFilmicToneMapping, BoxGeometry, CanvasTexture, Color, CylinderGeometry, DirectionalLight,
-  ExtrudeGeometry, Fog, Group, HemisphereLight, InstancedMesh, Matrix4, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, OrthographicCamera, Scene, Shape,
+  EdgesGeometry, ExtrudeGeometry, Fog, GridHelper, Group, HemisphereLight, InstancedMesh, LineBasicMaterial, LineSegments, MathUtils, Matrix4, Mesh,
+  MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, Scene, Shape,
   SphereGeometry, SRGBColorSpace, Vector3, WebGLRenderer,
 } from 'three';
 
@@ -15,7 +15,9 @@ function makeCampus() {
   const materials = Object.fromEntries(Object.entries(palette).map(([name, color]) =>
     [name, new MeshStandardMaterial({ color, roughness: .78 })]));
   const block = new BoxGeometry(1, 1, 1);
-  const plant = new SphereGeometry(1, 8, 5);
+  const plant = new SphereGeometry(1, 12, 8);
+  const outline = new EdgesGeometry(block);
+  const edges = new LineBasicMaterial({ color: 0xc2a5ff, transparent: true, opacity: .63 });
 
   function put(geometry, material, size, position) {
     const mesh = new Mesh(geometry, material);
@@ -25,7 +27,11 @@ function makeCampus() {
     return mesh;
   }
 
-  const box = (material, size, position) => put(block, materials[material], size, position);
+  function box(material, size, position) {
+    const mesh = put(block, materials[material], size, position);
+    if (size[0] >= 1 && size[1] >= .08) mesh.add(new LineSegments(outline, edges));
+    return mesh;
+  }
   const shrub = (material, size, position) => put(plant, materials[material], size, position);
 
   box('soil', [12, .46, 8.1], [0, -.26, 1.71]);
@@ -80,19 +86,21 @@ function makeCampus() {
     [1, 1, 1], [0, 0, .57]);
 
   const sign = document.createElement('canvas');
-  sign.width = 768;
-  sign.height = 82;
+  sign.width = 1536;
+  sign.height = 152;
   const signContext = sign.getContext('2d');
   signContext.fillStyle = '#293348';
   signContext.fillRect(0, 0, sign.width, sign.height);
   signContext.fillStyle = '#fff1d3';
-  signContext.font = '600 47px sans-serif';
+  signContext.font = '700 80px Arial';
   signContext.textAlign = 'center';
   signContext.textBaseline = 'middle';
-  signContext.fillText('NMAM INSTITUTE OF TECHNOLOGY', 384, 41);
+  signContext.fillText('N.M.A.M. INSTITUTE OF TECHNOLOGY', 768, 58);
+  signContext.font = '700 39px Arial';
+  signContext.fillText('NITTE', 768, 117);
   const signTexture = new CanvasTexture(sign);
   signTexture.colorSpace = SRGBColorSpace;
-  put(block, new MeshBasicMaterial({ map: signTexture }), [4.9, .42, .07], [0, 4.2, .84]);
+  put(block, new MeshBasicMaterial({ map: signTexture }), [5.38, .53, .095], [0, 4.26, .87]);
 
   for (const side of [-1, 1]) {
     for (let index = 0; index < 7; index++) {
@@ -116,65 +124,54 @@ function makeCampus() {
     put(block, new MeshStandardMaterial({ color: flags[index] }), [.28, .15, .035],
       [x + .12, height - .12, 2.63]).rotation.y = -.21;
   }
-  return campus;
+  return { campus, edges };
 }
 
-export function createCampus(canvas, viewport, reducedMotion) {
+export function createCampus(canvas, viewport) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
-  renderer.setClearColor(0x20182e, 0);
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.6));
+  renderer.setClearColor(0x131026, 0);
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMappingExposure = 1.17;
   const scene = new Scene();
-  scene.fog = new Fog(new Color(0x30243c), 20, 39);
-  scene.add(new HemisphereLight(0xeeeaff, 0x725743, 2.15));
-  const sun = new DirectionalLight(0xffe1b7, 3.1);
-  sun.position.set(-4, 9, 6);
+  scene.fog = new Fog(new Color(0x211a34), 19, 44);
+  const ambient = new HemisphereLight(0xd6d5ff, 0x493854, 1.35);
+  scene.add(ambient);
+  const sun = new DirectionalLight(0xffd4a6, 2.74);
+  sun.position.set(-5, 9, 5);
   scene.add(sun);
-  const backlight = new DirectionalLight(0xb8a0ef, 1.65);
+  const backlight = new DirectionalLight(0xb5a2ff, 2.8);
   backlight.position.set(5, 3, -4);
   scene.add(backlight);
-  scene.add(makeCampus());
+  const { campus, edges } = makeCampus();
+  scene.add(campus);
 
-  const camera = new OrthographicCamera(-7, 7, 4, -4, .1, 45);
-  const target = new Vector3(0, 1.2, 1.2);
-  const duration = 4600;
-  let elapsed = reducedMotion ? duration : 0;
-  let lastTime = 0;
-  let running = 0;
-  let visible = false;
+  const grid = new GridHelper(42, 42, 0x675291, 0x392d5a);
+  grid.position.y = -.48;
+  grid.material.transparent = true;
+  grid.material.opacity = .38;
+  scene.add(grid);
+
+  const camera = new PerspectiveCamera(39, 1, .1, 62);
+  const target = new Vector3(0, 1.5, 1.45);
+  let progress = -1;
   let contextAvailable = true;
 
   function draw() {
-    const progress = elapsed / duration;
-    const ease = progress * progress * (3 - 2 * progress);
-    const azimuth = .77 - ease * .58;
-    const length = 17;
-    camera.position.set(Math.sin(azimuth) * length, 11.4 - ease * 3.2, Math.cos(azimuth) * length);
-    target.y = 1.03 + ease * .38;
+    if (!contextAvailable) return;
+    const p = MathUtils.smoothstep(progress, 0, .76);
+    const wide = camera.aspect > 1.15;
+    const azimuth = .83 - p * .75;
+    const radius = (wide ? 19.8 : 23.9) - p * 6.9;
+    camera.position.set(-Math.sin(azimuth) * radius, 13.4 - p * 9.45, Math.cos(azimuth) * radius);
+    target.set(wide ? -1.18 : 0, 1.45 + p * .86, .96 + p * .9);
     camera.lookAt(target);
-    camera.zoom = 1 + ease * .08;
-    camera.updateProjectionMatrix();
+    sun.intensity = 1.48 + p * 2.14;
+    ambient.intensity = 1.69 - .25 * p;
+    edges.opacity = .63 - .5 * p;
+    grid.material.opacity = .5 - .39 * p;
     renderer.render(scene, camera);
-  }
-
-  function tick(time) {
-    running = 0;
-    elapsed = Math.min(duration, elapsed + (lastTime ? Math.min(time - lastTime, 50) : 0));
-    lastTime = time;
-    draw();
-    start();
-  }
-
-  function start() {
-    if (!running && visible && contextAvailable && !document.hidden && elapsed < duration) running = requestAnimationFrame(tick);
-  }
-
-  function stop() {
-    cancelAnimationFrame(running);
-    running = 0;
-    lastTime = 0;
   }
 
   function resize() {
@@ -182,53 +179,33 @@ export function createCampus(canvas, viewport, reducedMotion) {
     const width = viewport.clientWidth;
     const height = viewport.clientHeight;
     if (!width || !height) return;
-    const aspect = width / height;
-    const halfHeight = Math.max(4.85, 9.1 / aspect);
-    camera.left = -halfHeight * aspect;
-    camera.right = halfHeight * aspect;
-    camera.top = halfHeight;
-    camera.bottom = -halfHeight;
+    camera.aspect = width / height;
+    camera.fov = camera.aspect < 1 ? 58 : 39;
+    camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     draw();
   }
 
   new ResizeObserver(resize).observe(viewport);
-  new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
-    if (visible) start();
-    else stop();
-  }, { threshold: .2 }).observe(viewport);
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stop();
-    else start();
-  });
   canvas.addEventListener('webglcontextlost', (event) => {
     event.preventDefault();
     contextAvailable = false;
-    stop();
     viewport.classList.remove('has-campus');
   });
   canvas.addEventListener('webglcontextrestored', () => {
     contextAvailable = true;
     resize();
-    start();
     viewport.classList.add('has-campus');
   });
 
+  progress = 0;
   resize();
   viewport.classList.add('has-campus');
   return {
-    replay() {
-      elapsed = 0;
-      stop();
-      start();
-    },
-    setReducedMotion(enabled) {
-      if (enabled) {
-        elapsed = duration;
-        stop();
-        if (contextAvailable) draw();
-      }
+    setProgress(value) {
+      if (progress === value) return;
+      progress = value;
+      draw();
     },
   };
 }
