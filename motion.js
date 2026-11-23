@@ -29,6 +29,9 @@ export function createMotion({ reduced, onPipeline, onArm, onCampus }) {
   const campusPin = campus.querySelector('.campus-pin');
   const career = document.querySelector('.timeline');
   const viewport = matchMedia('(min-width: 801px) and (min-height: 730px)');
+  const seams = [...document.querySelectorAll('.scene-seam')].map((seam) => ({
+    seam, next: seam.nextElementSibling,
+  }));
   const scenes = [...document.querySelectorAll('.specialty-rail, .about-section, .music-section, .site-footer')];
   const reveals = [...document.querySelectorAll('.section-heading, .ai-chapter, .timeline li, .profile-grid article, .project-archive, .project-card')];
   const navigation = [...document.querySelectorAll('.main-nav a, .header-contact')].map((link) => ({
@@ -71,6 +74,7 @@ export function createMotion({ reduced, onPipeline, onArm, onCampus }) {
     const chapterBounds = chapters.map((element) => element.getBoundingClientRect());
     const sceneBounds = scenes.map((element) => element.getBoundingClientRect());
     const revealBounds = reveals.map((element) => element.getBoundingClientRect());
+    const seamBounds = seams.map(({ seam }) => seam.getBoundingClientRect());
     let activeLink;
     for (const item of navigation) {
       if (item.section.getBoundingClientRect().top <= height * .26) activeLink = item.link;
@@ -104,6 +108,13 @@ export function createMotion({ reduced, onPipeline, onArm, onCampus }) {
       career.style.setProperty('--career-travel', clamp((height * .63 - careerBounds.top) / Math.max(1, careerBounds.height)));
       scenes.forEach((element, index) => element.style.setProperty('--scene', cue(sceneBounds[index])));
       reveals.forEach((element, index) => element.style.setProperty('--entry', cue(revealBounds[index], .96, .52)));
+      seams.forEach(({ seam, next }, index) => {
+        const phase = cue(seamBounds[index], .91, .22);
+        const glow = Math.sin(Math.PI * phase);
+        seam.style.setProperty('--sweep', phase);
+        seam.style.setProperty('--glow', glow);
+        next.style.setProperty('--spill', glow);
+      });
       if (railExtent) {
         const top = parseFloat(getComputedStyle(board).top) || 0;
         const position = clamp((top - reelBounds.top) / railRun);

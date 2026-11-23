@@ -14,6 +14,7 @@ const chapters = [...document.querySelectorAll('[data-chapter]')];
 const aiButtons = [...aiControls.querySelectorAll('button')];
 const diagram = createDiagram(document.querySelector('#flow-canvas'), reducedMotion.matches);
 const campusView = document.querySelector('.campus-view');
+const campusLeg = document.querySelector('.campus-leg');
 let activeChapter = -1;
 let arm;
 let campus;
@@ -47,7 +48,10 @@ const motion = createMotion({
     arm.setProgress(progress);
   },
   onCampus(progress, visible) {
-    if (visible) campus?.setProgress(progress);
+    if (!visible || !campus) return;
+    campus.setProgress(progress);
+    const leg = progress < .31 ? 'Above the grounds' : progress < .91 ? 'Garden approach' : 'Under the portico';
+    if (campusLeg.textContent !== leg) campusLeg.textContent = leg;
   },
 });
 reducedMotion.addEventListener('change', ({ matches }) => diagram?.setReducedMotion(matches));
@@ -159,12 +163,12 @@ if (navigator.clipboard?.writeText) {
   });
 }
 
-function runWhenNear(element, launch) {
+function runWhenNear(element, launch, rootMargin = '250px') {
   const observer = new IntersectionObserver(([entry]) => {
     if (!entry.isIntersecting) return;
     observer.disconnect();
     launch();
-  }, { rootMargin: '250px' });
+  }, { rootMargin });
   observer.observe(element);
 }
 
@@ -179,7 +183,7 @@ async function launchCampus() {
 }
 if (typeof window.WebGL2RenderingContext !== 'undefined') {
   runWhenNear(studio, launchStudio);
-  runWhenNear(campusView, launchCampus);
+  runWhenNear(campusView, launchCampus, '520px');
 }
 
 const musicTransition = document.querySelector('.music-transition');
