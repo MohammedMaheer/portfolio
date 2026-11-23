@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f3ed">
+  <meta name="theme-color" content="#17131f">
   <meta name="description" content="Mohammed Maheer, robotics and AI engineer. Selected work in ROS 2, robot simulation, agentic AI, computer vision, and full-stack engineering.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mohammed Maheer — AI &amp; Robotics Engineer">
@@ -17,25 +17,34 @@
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./app.js"></script>
 </head>
-<body>
+<body id="top">
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header" id="header">
     <div class="container header-inner">
-      <a class="brand" href="#header" aria-label="Maheer home"><span class="brand-icon" aria-hidden="true">M</span> maheer<span class="brand-domain">.tech</span></a>
+      <a class="brand" href="#top" aria-label="Maheer home"><span class="brand-icon" aria-hidden="true">M</span> maheer<span class="brand-domain">.tech</span></a>
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#lab">Lab</a>
         <a href="#portfolio">Work</a>
+        <a href="#education">Education</a>
         <a href="#experience">Experience</a>
         <a href="#about">About</a>
       </nav>
       <a class="header-contact" href="#contact"><span aria-hidden="true"></span> Get in touch</a>
     </div>
+    <div class="page-progress" aria-hidden="true"><span></span></div>
   </header>
   <main id="main">
-    <section class="hero container" aria-labelledby="hero-title">
+    <section class="hero-shell" aria-labelledby="hero-title">
+      <div class="hero-motion" aria-hidden="true">
+        <div class="hero-mesh"></div>
+        <div class="hero-orbit"><i></i></div>
+        <div class="hero-orbit hero-orbit-second"><i></i></div>
+        <div class="hero-orbit hero-orbit-third"><i></i></div>
+      </div>
+      <div class="hero container">
       <div class="hero-copy">
         <p class="eyebrow hero-role"><span></span> AI &amp; Robotics Engineer</p>
-        <h1 id="hero-title">Mohammed<br>Maheer<span>.</span></h1>
+        <h1 id="hero-title"><span>Mohammed</span><br><span>Maheer<b>.</b></span></h1>
         <p class="hero-summary">I build AI agents, computer vision systems, and robotics software, from the first experiment to a working deployment.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="#portfolio">Explore my work</a>
@@ -47,6 +56,7 @@
         <img src="./media/portrait.webp" width="625" height="1001" fetchpriority="high" alt="Mohammed Maheer">
         <figcaption><span>Current · Full-time</span> Robotics Software Engineer at<br> Acceleration Robotics</figcaption>
       </figure>
+      </div>
     </section>
 
     <div class="specialty-rail">
@@ -61,35 +71,45 @@
         <div><p class="eyebrow"><span></span> Interactive demos</p><h2 id="lab-title">AI &amp; robotics lab<span>.</span></h2></div>
         <p>Step through an AI retrieval workflow or put a 3D robot arm through three poses.</p>
       </div>
-      <div class="lab-grid">
-      <article class="ai-demo" aria-labelledby="ai-demo-title">
-        <div class="ai-demo-header">
-          <p class="project-kind">Retrieval-augmented generation</p>
-          <h3 id="ai-demo-title">Inside a RAG pipeline</h3>
-        </div>
-        <p class="ai-query"><span>Example query</span> How does OpsPilot route urgent reports?</p>
-        <div class="ai-controls" role="group" aria-label="RAG pipeline stage" hidden>
-          <button type="button" data-stage="retrieve" aria-pressed="true">Retrieve</button>
-          <button type="button" data-stage="rerank" aria-pressed="false">Rerank</button>
-          <button type="button" data-stage="answer" aria-pressed="false">Answer</button>
-        </div>
-        <div class="ai-results" aria-live="polite">
-          <div data-result="retrieve">
-            <h4>Find relevant passages</h4>
-            <p>Search the procedure library for passages about urgent reports and routing.</p>
-            <ul><li>Safety gate and urgent incidents</li><li>Team routing and response targets</li></ul>
+      <div class="ai-story">
+        <figure class="ai-demo" aria-labelledby="ai-demo-title">
+          <div class="ai-demo-header">
+            <p class="project-kind">Retrieval-augmented generation</p>
+            <h3 id="ai-demo-title">Inside a RAG pipeline</h3>
           </div>
-          <div data-result="rerank" hidden>
-            <h4>Put the strongest evidence first</h4>
-            <p>Prioritize the safety rule because the question asks how urgent reports are handled. Keep the routing rule for the next step.</p>
+          <p class="ai-query"><span>Example query</span> How does OpsPilot route urgent reports?</p>
+          <div class="flow-visual">
+            <canvas id="flow-canvas" aria-hidden="true"></canvas>
+            <ol class="flow-fallback" aria-label="Pipeline overview"><li>Query</li><li>Evidence</li><li>Response</li></ol>
           </div>
-          <div data-result="answer" hidden>
-            <h4>Write an answer from the evidence</h4>
-            <p>First, OpsPilot checks the report against its safety rules. It then assigns a priority, responsible team, and response target based on its routing rules.</p>
+          <div class="ai-controls" role="group" aria-label="RAG pipeline stage" hidden>
+            <button type="button" data-stage="retrieve" aria-pressed="true">Retrieve</button>
+            <button type="button" data-stage="rerank" aria-pressed="false">Rerank</button>
+            <button type="button" data-stage="answer" aria-pressed="false">Answer</button>
           </div>
+          <figcaption class="ai-demo-note">Illustrated example based on <a href="https://github.com/MohammedMaheer/opspilot-ai">OpsPilot AI</a>.</figcaption>
+        </figure>
+        <ol class="ai-chapters" aria-label="Stages in the illustrated AI pipeline">
+          <li class="ai-chapter" id="stage-retrieve" data-chapter="retrieve">
+            <p>Retrieve</p><h3>Find the relevant evidence.</h3>
+            <p>Search the procedure library for the sections on urgent incidents and team routing.</p>
+          </li>
+          <li class="ai-chapter" id="stage-rerank" data-chapter="rerank">
+            <p>Rerank</p><h3>Put the safety rule first.</h3>
+            <p>The question is about urgency, so the safety rule comes before the routing procedure. Both stay in the context.</p>
+          </li>
+          <li class="ai-chapter" id="stage-answer" data-chapter="answer">
+            <p>Answer</p><h3>Turn evidence into a handoff.</h3>
+            <p>OpsPilot checks the safety rules, then uses its routing rules to assign a priority, an owner, and a response target.</p>
+          </li>
+        </ol>
+      </div>
+      <article class="robot-feature" aria-labelledby="robot-title">
+        <div class="robot-copy">
+          <p class="eyebrow"><span></span> 3D robotics demo</p>
+          <h3 id="robot-title">A robot arm in motion<span>.</span></h3>
+          <p>Run the pose sequence or take control of the arm. Drag to orbit the model, or use the arrow keys while the view is focused.</p>
         </div>
-        <p class="ai-demo-note">Illustrated example based on <a href="https://github.com/MohammedMaheer/opspilot-ai">OpsPilot AI</a>.</p>
-      </article>
       <div class="studio" id="arm-studio">
         <div class="studio-top">
           <span><i aria-hidden="true"></i> Robot arm simulator</span>
@@ -107,12 +127,15 @@
             <button type="button" data-pose="reach" aria-pressed="false">Reach</button>
             <button type="button" data-pose="stow" aria-pressed="false">Stow</button>
           </div>
-          <button type="button" class="motion-button" id="arm-motion" aria-label="Pause auto-rotate" hidden><span aria-hidden="true"></span></button>
+          <div class="studio-playback">
+            <button type="button" class="sequence-button" id="arm-sequence" hidden>Play poses</button>
+            <button type="button" class="motion-button" id="arm-motion" aria-label="Pause auto-rotate" hidden><span aria-hidden="true"></span></button>
+          </div>
           <span class="studio-fallback-label">Interactive 3D arm study</span>
           <span class="visually-hidden" id="pose-status" role="status"></span>
         </div>
       </div>
-      </div>
+      </article>
     </section>
 
     <section class="section container work-section" id="portfolio" aria-labelledby="work-title">
@@ -200,27 +223,84 @@
         </article>
       </div>
       <details class="project-archive">
-        <summary>More projects and prototypes</summary>
+        <summary>Browse the project archive</summary>
+        <div class="archive-search" hidden>
+          <label for="archive-search">Search the archive</label>
+          <input id="archive-search" type="search" placeholder="Try ROS 2, voice, or React" autocomplete="off">
+          <p id="archive-status" role="status"></p>
+        </div>
         <div class="archive-grid">
           <article><h3>Agentic AI &amp; voice</h3><ul>
             <li><a href="https://github.com/MohammedMaheer/Jarvis">J.A.R.V.I.S.</a><p>Local assistant for desktop automation with speech, memory, and tool execution.</p></li>
             <li><a href="https://github.com/MohammedMaheer/NeuralOrchestrator-WebBased-Agentic-AI">Neural Orchestrator</a><p>Multimodal agent orchestration with voice, vision, and a 3D interface.</p></li>
             <li><a href="https://github.com/MohammedMaheer/silicaflow">SilicaFlow</a><p>Agentic coding studio with a multi-model router and Flutter client.</p></li>
             <li><strong>Speech &amp; voice automation</strong><p>Whisper transcription for English, Hindi, and Marathi, plus a four-language voice automation system and a lead-qualification system designed for up to 10 concurrent calls.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/AI_JobFormMaker">AI Job Form Maker</a><p>A Python prototype for AI-assisted job form creation.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/Efforts-Recruitment-Tool">Efforts Recruitment Tool</a><p>AI-assisted recruitment workflows with search, matching, and evaluation.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/LeadFlowAI">LeadFlow AI</a><p>Lead-generation workflow prototype.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/interviewvoip">Interview VoIP</a><p>Voice interview prototype with a web-based calling interface.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/videovoip">Video VoIP</a><p>Video calling prototype.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/voip1">VoIP experiments</a><p>JavaScript voice calling experiments.</p></li>
           </ul></article>
           <article><h3>Robotics &amp; vision</h3><ul>
             <li><a href="https://github.com/MohammedMaheer/rust_ros2bags_live_status_dashboard">Rust ROS 2 recorder</a><p>Offline-first, multi-robot data capture with resumable cloud sync.</p></li>
             <li><strong>Face recognition attendance</strong><p>ONNX and GCP attendance platform with real-time and location-based verification, supporting 150+ workers.</p></li>
             <li><strong>Computer vision proctoring</strong><p>Interview and exam monitoring with YOLO, OpenCV, and browser event tracking.</p></li>
             <li><strong>Underwater robot prototype</strong><img class="archive-photo" loading="lazy" src="./media/underwater.webp" width="960" height="540" alt="Underwater robot prototype laid out on pavement"></li>
+            <li><a href="https://github.com/MohammedMaheer/shapemorphing-drone-main">Shape-morphing drone</a><p>Shape-morphing drone project prototype.</p></li>
+            <li><strong>RF-tracking drone payload</strong><p>Sensor, camera, and weight feasibility work for a drone payload at Future Earth Design Solutions.</p></li>
+            <li><strong>Image-to-speech</strong><p>Tesseract OCR, OpenCV preprocessing, and speech synthesis pipeline from the TechnoFly internship.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/InternshipStudio_youtubeadviewprediction">YouTube ad-view prediction</a><p>Machine learning project from Internship Studio.</p></li>
           </ul></article>
           <article><h3>Backend &amp; document tools</h3><ul>
             <li><a href="https://github.com/MohammedMaheer/transaction-ledger-api">Transaction Ledger API</a><p>FastAPI and PostgreSQL service with immutable ledger entries and atomic transfers.</p></li>
             <li><a href="https://github.com/MohammedMaheer/adobeindiahackathon">Connecting the Dots</a><p>Offline PDF outline extraction and persona-driven document retrieval for the Adobe India Hackathon.</p></li>
             <li><strong>Rental &amp; payment automation</strong><p>Designed an architecture for 700+ rooms covering payments, reconciliation, reporting, and tenant notifications.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/Crm-Efforts-SRC">CRM for Efforts Solutions</a><p>TypeScript CRM codebase.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/dashboard_app">Dashboard app</a><p>Python dashboard prototype.</p></li>
+            <li><strong>Drupal staging upgrade</strong><p>Drupal upgrade, deployment verification, and rollback planning.</p></li>
+          </ul></article>
+          <article><h3>Web &amp; interaction</h3><ul>
+            <li><a href="https://github.com/MohammedMaheer/Authorcraft_Website_Prototype_1">Authorcraft</a><p>TypeScript website prototype.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/Front-end_projects">Yard Line Operations</a><p>Front-end operations interface.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/field-sim-activation">Field Sim Activation</a><p>TypeScript interface prototype.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/mousawi">Mousawi</a><p>JavaScript website project.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/InternalApplicationPrototype">Internal application prototype</a><p>JavaScript application exploration.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/algo_visualiser">Algorithm visualizer</a><p>Interactive TypeScript project for exploring algorithms.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/Mission_impossible_">Mission Impossible</a><p>Web concept and interface experiment.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/SteveJobless">SteveJobless</a><p>Team website built with TypeScript.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/Personal_Portfolio">Original personal portfolio</a><p>Earlier portfolio and layout exploration.</p></li>
+          </ul></article>
+          <article><h3>Coursework &amp; hackathons</h3><ul>
+            <li><a href="https://github.com/MohammedMaheer/hackrx_codemogrepeat">HackRx · CodeMogRepeat</a><p>Team hackathon submission.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/advhackrx">HackRx experiments</a><p>Python project from HackRx.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/transport_management_db">Transport management database</a><p>Database management coursework.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/crimedb">Crime records database</a><p>JavaScript database project.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/student_db_management">Student database management</a><p>PHP database management project.</p></li>
+            <li><a href="https://github.com/MohammedMaheer/Projects">Other project experiments</a><p>Additional code and coursework on GitHub.</p></li>
           </ul></article>
         </div>
       </details>
+    </section>
+
+    <section class="education-section" id="education" aria-labelledby="education-title">
+      <div class="container section education-inner">
+        <div class="education-copy">
+          <p class="eyebrow"><span></span> Education</p>
+          <h2 id="education-title">NMAMIT, Nitte<span>.</span></h2>
+          <p class="degree-title">B.Tech. in Robotics and Artificial Intelligence</p>
+          <p class="degree-meta">Graduated in 2026 · Nitte, Karnataka</p>
+          <p>My coursework and lab work covered robotic kinematics, control, ROS, industrial automation, and applied machine learning.</p>
+          <a class="text-link" href="https://nitte.edu.in/nmamit/department-robotics.php">Visit the department</a>
+        </div>
+        <figure class="campus-film">
+          <div class="campus-view">
+            <div class="campus-fallback" aria-hidden="true"></div>
+            <canvas id="campus-canvas" aria-hidden="true"></canvas>
+          </div>
+          <figcaption><span>Illustrated model of the NMAMIT main block</span><button type="button" id="campus-replay" hidden>Replay flyover</button></figcaption>
+        </figure>
+      </div>
     </section>
 
     <section class="career-section" id="experience" aria-labelledby="experience-title">
@@ -238,7 +318,7 @@
             <p class="timeline-date">Oct 2026 – Present</p><div><h3>Founding AI/ML Engineer</h3><p class="timeline-company">Future Earth Design Solutions Pvt. Ltd. · Startup venture · Bengaluru</p><p>Evaluating sensors, camera integration, and weight constraints for an RF-tracking drone payload. Exploring RF propagation and robotics simulation with NVIDIA Isaac Sim and Sionna RT.</p></div>
           </li>
           <li>
-            <p class="timeline-date">Feb – Oct 2026</p><div><h3>AI Consultant &amp; Solutions Architect</h3><p class="timeline-company">Efforts Solutions IT · Consulting engagement · Abu Dhabi, remote</p><p>Designed AI recruitment and lead-generation applications and deployed a face-recognition attendance platform using ONNX and GCP.</p></div>
+            <p class="timeline-date">Feb – Oct 2026</p><div><h3>AI Engineer &amp; Solutions Architect</h3><p class="timeline-company">Efforts Solutions IT · Consultant · Abu Dhabi, remote</p><p>Designed AI recruitment and lead-generation applications and deployed a face-recognition attendance platform using ONNX and GCP.</p></div>
           </li>
           <li>
             <p class="timeline-date">Jun – Jul 2025</p><div><h3>AI Intern</h3><p class="timeline-company">TechnoFly Solutions · Bengaluru</p><p>Built an image-to-speech pipeline with Tesseract, OpenCV, and text-to-speech synthesis.</p></div>
@@ -261,7 +341,7 @@
           <h2 id="about-title">How I work<span>.</span></h2>
           <p class="about-lede">I work across applied AI and robotics software, from model and sensor experiments through integration and deployment.</p>
           <p>On the AI side, I build agentic workflows with retrieval, tool calling, and evaluation, and optimize models for cloud and edge inference. My robotics work includes ROS 2 middleware, perception, and simulation.</p>
-          <dl class="about-facts"><div><dt>Education</dt><dd>B.Tech. Robotics and Artificial Intelligence<br>NMAM Institute of Technology · 2022–2026</dd></div><div><dt>Languages</dt><dd>English, Hindi, Kannada, Arabic</dd></div></dl>
+          <dl class="about-facts"><div><dt>Education</dt><dd><a href="#education">NMAM Institute of Technology, Nitte</a><br>B.Tech. Robotics and AI · 2026 graduate</dd></div><div><dt>Languages</dt><dd>English, Hindi, Kannada, Arabic</dd></div></dl>
         </div>
       </div>
       <div class="profile-grid">
@@ -270,6 +350,24 @@
         <article><h3>Certifications &amp; activities</h3><p>Google Cloud Introduction to Generative AI, Robot Localization with Python and Particle Filters, and applied ML and automation courses.</p><p>Co-Head of Graphic Design for CSI at NMAMIT, Co-Treasurer of the NSS IT Wing, and Digital Head at Authorcraft.</p></article>
       </div>
     </section>
+    <section class="container music-section" id="music" aria-labelledby="music-title">
+      <div class="music-card">
+        <div class="music-copy">
+          <p class="eyebrow"><span></span> Music</p>
+          <h2 id="music-title">Late Lab Sessions<span>.</span></h2>
+          <p>Kanye West, Lil Wayne, The Weeknd, and Radiohead for late nights in the lab.</p>
+          <div class="music-links">
+            <a class="button button-primary" data-music-link href="https://open.spotify.com/playlist/31AstQRvaRjoUDUjKQlWSe">Spotify playlist</a>
+            <a class="button button-primary" data-music-link href="https://music.apple.com/in/playlist/late-lab-sessions/pl.u-pMylg4bIWqel0gK">Apple Music playlist</a>
+            <a class="button button-outline" data-music-link href="https://open.spotify.com/user/ykqy4k001ciz82xfncw3q6zxo">Spotify profile</a>
+          </div>
+        </div>
+        <div class="music-art" aria-hidden="true">
+          <div class="music-earbuds"><i></i><i></i><b></b></div>
+        </div>
+      </div>
+    </section>
+    <div class="music-transition" aria-hidden="true" hidden></div>
   </main>
 
   <footer id="contact" class="site-footer">
@@ -280,10 +378,10 @@
           <a class="email-link" href="mailto:mohdmaahir786@gmail.com">mohdmaahir786@gmail.com</a>
           <button type="button" class="copy-email" id="copy-email" hidden>Copy email</button>
           <span class="visually-hidden" id="copy-status" role="status"></span>
-          <div class="contact-socials"><a href="https://github.com/MohammedMaheer">GitHub</a><a href="https://www.linkedin.com/in/mohammedmaheer/">LinkedIn</a><a href="./images/my-cv.pdf" download="Mohammed-Maheer-Resume.pdf">Résumé</a></div>
+          <div class="contact-socials"><a href="https://github.com/MohammedMaheer">GitHub</a><a href="https://www.linkedin.com/in/mohammedmaheer/">LinkedIn</a><a class="instagram-link" href="https://www.instagram.com/maheer.robo/">Instagram @maheer.robo</a><a href="./images/my-cv.pdf" download="Mohammed-Maheer-Resume.pdf">Résumé</a></div>
         </div>
       </div>
-      <div class="footer-bottom"><small>© Mohammed Maheer</small><a href="#header">Back to top</a></div>
+      <div class="footer-bottom"><small>© Mohammed Maheer</small><a href="#top">Back to top</a></div>
     </div>
   </footer>
 </body>

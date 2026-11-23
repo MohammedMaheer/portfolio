@@ -1,6 +1,6 @@
 # Mohammed Maheer’s portfolio
 
-The portfolio at [maheer.tech](https://maheer.tech/) is a static Vite site. The AI lab uses a scripted example. The robot arm is rendered with Three.js and has a still-image fallback.
+The portfolio at [maheer.tech](https://maheer.tech/) is a static Vite site. The AI lab visualizes a scripted retrieval example. The robot arm and NMAMIT campus model are rendered with Three.js and have still-image fallbacks.
 
 ```sh
 npm ci

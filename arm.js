@@ -195,7 +195,7 @@ function buildStage(scene) {
   }
 }
 
-export function createArm(canvas, viewport, reduceMotion) {
+export function createArm(canvas, viewport, reduceMotion, onPose) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power', alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.setClearColor(0x191b1b, 0);
@@ -221,10 +221,14 @@ export function createArm(canvas, viewport, reduceMotion) {
   const { robot, move } = buildRobot();
   scene.add(robot);
   const camera = new OrthographicCamera(-3, 3, 2.5, -2.5, .1, 32);
-  const center = new Vector3(.53, 1.87, 0);
+  const center = new Vector3(.53, 1.62, 0);
   let current = { ...poses.home };
   let target = poses.home;
   let autoRotate = !reduceMotion;
+  const poseNames = Object.keys(poses);
+  let poseIndex = 0;
+  let playing = false;
+  let poseTime = 0;
   let azimuth = .64;
   let elevation = .27;
   let orbitTime = 0;
@@ -238,7 +242,7 @@ export function createArm(canvas, viewport, reduceMotion) {
     const width = viewport.clientWidth;
     const height = viewport.clientHeight;
     if (!width || !height) return;
-    const halfHeight = Math.max(2.3, 2.2 * height / width);
+    const halfHeight = Math.max(2.08, 2.2 * height / width);
     const halfWidth = halfHeight * width / height;
     camera.left = -halfWidth;
     camera.right = halfWidth;
@@ -263,6 +267,10 @@ export function createArm(canvas, viewport, reduceMotion) {
     const delta = lastTime ? Math.min((time - lastTime) / 1000, .05) : 0;
     lastTime = time;
     if (autoRotate && !drag) orbitTime += delta * .46;
+    if (playing) {
+      poseTime += delta;
+      if (poseTime >= 2.35) selectPose(poseNames[(poseIndex + 1) % poseNames.length]);
+    }
     let settling = false;
     for (const key of Object.keys(current)) {
       if (reduceMotion || Math.abs(current[key] - target[key]) < .001) {
@@ -273,12 +281,20 @@ export function createArm(canvas, viewport, reduceMotion) {
       }
     }
     render();
-    if (autoRotate || settling) schedule();
+    if (autoRotate || playing || settling) schedule();
     else lastTime = 0;
   }
 
   function schedule() {
     if (!frame && visible && contextReady && !document.hidden) frame = requestAnimationFrame(tick);
+  }
+
+  function selectPose(pose) {
+    poseIndex = poseNames.indexOf(pose);
+    target = poses[pose];
+    poseTime = 0;
+    onPose(pose);
+    schedule();
   }
 
   function sleep() {
@@ -354,17 +370,22 @@ export function createArm(canvas, viewport, reduceMotion) {
 
   return {
     get rotating() { return autoRotate; },
+    get playing() { return playing; },
     setRotation(enabled) {
       autoRotate = enabled;
       schedule();
     },
-    setPose(pose) {
-      target = poses[pose];
-      schedule();
+    setPose: selectPose,
+    setSequence(enabled) {
+      playing = enabled;
+      if (enabled) selectPose(poseNames[(poseIndex + 1) % poseNames.length]);
     },
     setReducedMotion(enabled) {
       reduceMotion = enabled;
-      if (enabled) autoRotate = false;
+      if (enabled) {
+        autoRotate = false;
+        playing = false;
+      }
       schedule();
     },
   };
